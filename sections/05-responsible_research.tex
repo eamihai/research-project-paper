@@ -1,6 +1,5 @@
 \section{Responsible Research}
 \label{sec: responsible-research}
+This work does not involve personal data or any ethically sensitive information. We conducted all the experiments using synthetic data, which does not come from real users or real-world systems. Because of this, there are no ethical concerns related to privacy or security in our research.
 
-\begin{itemize}
-    \item Describe how we ensured the reproducibility of the experiments.
-\end{itemize}
+We made efforts to ensure the reproducibility of our results. Section~\ref{subsec: deployment-and-metrics-collection} describes the environment used for the experiments, along with the way we measured the performance and collected the metrics. The deployment is fully automated using Docker containers. The source code for the server, client, and experimental scripts will be available in a public repository\footnote{\url{https://github.com/delftdata/Detock}}, along with step-by-step instructions for setting up the benchmarking framework, running the experiments, and collecting the results. We understand that others who repeat our experiments may get slightly different results. This is expected in distributed systems research due to several factors, including the noise from background processes or the unpredictability of network communication. To reduce this variability, we ran the experiments several times and reported the average result. This helps in making our comparisons more reliable. In addition, we used fixed random seeds in our transaction generator, so that experiments with identical parameters follow the same behavior across different runs.

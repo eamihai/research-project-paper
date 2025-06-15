@@ -1,3 +1,7 @@
 \begin{abstract}
 \label{sec: abstract}
+Existing performance evaluations of geo-distributed databases still rely on highly partitionable workloads such as TPC-C or key-value microbenchmarks such as YCSB+T. We introduce a configurable benchmarking framework based on the Product-Parts-Supplier (PPS) workload that (i) models many-to-many relationships, (ii) includes a dependent, two-phase transaction whose access set can be tuned to be single- or multi-partition and single- or multi-home, and (iii) generates longer-lasting transactions that can lead to richer contention challenges than the standard OLTP workloads. The framework is implemented on top of the Detock codebase and can run Calvin, SLOG, Detock, and Janus from a shared storage and networking layer, ensuring fair comparison.
+
+We look at six scenarios: a balanced baseline, skewed access, a sunflower topology, client scalability, network delay, and packet loss. TODO: write about some insights from the evaluations.
+
 \end{abstract}

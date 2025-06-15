@@ -5,7 +5,7 @@ This chapter presents the implementation details of our benchmarking framework, 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=1\linewidth]{figures/Overall Architecture.pdf}
-    \caption{Overall Architecture of the Benchmarking Framework, along with all the Tunable Parameters}
+    \caption{Overall Architecture of the Benchmarking Framework, along with all the Tunable Parameters.}
     \label{fig: overall-architecture}
 \end{figure}
 
@@ -14,6 +14,13 @@ This chapter presents the implementation details of our benchmarking framework, 
 The databases we evaluate follow a common setup, where data is partitioned across different servers, and each partition is replicated in several different geographically distributed regions to ensure availability and low latency by placing the data closer to the users. Our benchmark is capable of spawning clients in different regions and targeting specific partitions within that region. The overall architecture of our benchmarking framework and the way it interacts with geo-distributed databases is shown in Figure~\ref{fig: overall-architecture}.
 
 As stated in Section~\ref{subsec: evaluated-systems}, we implemented the benchmark within the Detock codebase to offer a unified testing environment for all the evaluated systems. This integration also allows us to define key components such as table schemas, table loaders, and stored procedures in a single place and use them consistently across all databases.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/Baseline.pdf}
+    \caption{Baseline Scenario Results.}
+    \label{fig: baseline-scenario}
+\end{figure*}
 
 \subsection{Dependent Transactions}
 \label{subsec: dependent-transactions}
@@ -35,8 +42,25 @@ In our workload, only the second phase of the \textit{OrderProduct} transaction 
     \item \textit{Category IV}. The parts are located in different partitions and also belong to different home regions.
 \end{itemize}
 
+By organizing the parts into these four categories, the benchmarking framework can dynamically generate \textit{OrderProduct} transactions with specific characteristics, namely multi- or single-home, and, independently, single- or multi-partition, based on the parts associated with each product. For example, if we want to generate a single-home multi-partition transaction, we select a product from Category III. 
+
 \subsection{Transactional Mix}
 \label{subsec: transactional-mix}
 Section~\ref{subsec: product-parts-supplier-workload} introduced the type of transactions that we consider in our benchmarking framework. While all these transactions reflect realistic business operations, such as updating a product or retrieving a part, not all of these types are well-suited for evaluating geo-distributed behavior. In particular, as stated in the previous subsection, only the \textit{OrderProduct} transaction has an access pattern that can span multiple partitions and regions, making it the only meaningful operation that can test the servers' coordination.
 
-As a consequence, we used a transactional mix that favored using the \textit{OrderProduct} type. In addition, we assigned greater weights to the \textit{UpdateProductPart} type since it can interfere with the two-phase dependent transactions, and to the \textit{GetPartsByProduct} type since it accesses multiple records, which makes it more relevant for evaluating concurrency behavior. In contrast, the simple read-only transactions \textit{GetPart} and \textit{GetProduct} have lower priority. Therefore, our experiments use a transactional mix consisting of 70\% \textit{OrderProduct}, 10\% \textit{GetPartsByProduct}, 10\% \textit{UpdateProductPart}, 5\% \textit{GetProduct}, and 5\% \textit{GetPart}.
+As a consequence, we used a transactional mix that favors the \textit{OrderProduct} type. In addition, we assigned greater weights to the \textit{UpdateProductPart} type, since it can interfere with two-phase dependent transactions, and to the \textit{GetPartsByProduct} type, since it accesses multiple records, making it more relevant for evaluating concurrency behavior. In contrast, the simple read-only transactions \textit{GetPart} and \textit{GetProduct} have lower priority. The mix is summarized in Table~\ref{tab: pps-transactional-mix}.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}} l r}
+    \toprule
+    \textbf{Transaction Type} & \textbf{Ratio} \\ \midrule
+    \textit{OrderProduct} & 80\% \\
+    \textit{GetPartsByProduct} & 8\% \\
+    \textit{UpdateProductPart} & 8\%  \\
+    \textit{GetPart} & 2\%  \\
+    \textit{GetProduct} & 2\%  \\ \bottomrule
+  \end{tabular*}
+  \caption{PPS Transactional Mix used in our Experiments.}
+  \label{tab: pps-transactional-mix}
+\end{table}

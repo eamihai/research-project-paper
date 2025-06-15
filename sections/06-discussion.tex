@@ -1,9 +1,15 @@
 \section{Discussion}
 \label{sec: discussion}
+An important part of this study is the use of Product-Parts-Supplier workload instead of a more common benchmark such as TPC-C and YCSB+T. In this chapter, we outline the main advantages of using this workload and also acknowledge the limitations it introduces.
 
-\begin{itemize}
-    \item Analyse and interpret the results.
-    \item Identify the bottleneck in the systems and explain how they are related to the design of the systems.
-    \item Describe strengths, weaknesses, and limitations of the benchmark and compare to other benchmarks.
-    \item Explain the usefulness of the benchmark for geo-distributed databases.
-\end{itemize}
+\subsection{Advantages of the PPS Workload}
+\label{subsec: advantages-of-the-pps-workload}
+
+\textbf{Dependent Transactions}. PPS models many-to-many relationships between products, parts, and suppliers. Thus, transactions need to work with foreign key dependencies when joining different tables, which is not the case in the single-table YCSB+T workload and the TPC-C warehouse hierarchy. In particular, the \textit{OrderProduct} type needs to perform a read phase to discover all the relevant parts before being able to perform the actual updates. In case of detecting updates in the retrieved parts, the transaction needs to abort. In contrast, there are no situations in which deterministic databases need to abort when used with TPC-C and YCSB+T.\\\\
+\textbf{Longer Transaction Footprint}. The number of parts read and updated by \textit{GetPartsByProduct} and \textit{OrderProduct} is configurable. In our experiments, we used 10. As a consequence, we can set the read and write sets to be large and thus forcing the transaction to hold the locks on the resources for a longer period of time.\\\\
+\textbf{Configurable Multi-home and Multi-partition}. By selecting products from specific categories (Section~\ref{subsec: partitioning-and-home-assignment-schemes}), we can tune the \textit{OrderProduct} transactions to be single- or multi-home, and single- or multi-partition, on the fly. This gives us fine-grained control over the cross-region coordination costs and the intra-region communication overhead.
+
+\subsection{Limitations of the PPS Workload}
+\label{subsec: limitations-of-the-pps-workload}
+\textbf{Limited Updates}. Unfortunately, only two transactions in the PPS mix perform writes, namely \textit{OrderProduct} and \textit{UpdateProductPart}. Each of them modifies records from a single table, which are located on a single partition. On the other hand, TPC-C offers a broader spectrum of write patterns, which can lead to more interesting contention challenges that PPS cannot reproduce.\\\\
+\textbf{Multi-home and Multi-partition Limitations}. Because only the \textit{OrderProduct} transaction can be configured to be multi-home or multi-partition, the workload mix must be adjusted to consider this. YCSB+T, although simpler, allows arbitrary key distributions without such constraints.
