@@ -1,28 +1,19 @@
 \begin{figure*}[t]
     \centering
-    \includegraphics[width=1\textwidth]{figures/Skew.pdf}
-    \caption{Skew Access Scenario Results.}
-    \label{fig: skew-access-scenario}
-\end{figure*}
-
-\begin{figure*}[t]
-    \centering
     \includegraphics[width=1\textwidth]{figures/Scalability.pdf}
-    \caption{Scalability Scenario Results.}
+    \caption{Results of the Scalability Scenario.}
     \label{fig: scalability-access-scenario}
 \end{figure*}
 
 \section{Experimental Setup and Results}
 \label{sec: experimental-setup-and-results}
-This chapter presents our deployment setup, the methodology used for performance measurement, and the results obtained under a range of different experimental scenarios.
+This section outlines our experimental methodology and key findings. Section~\ref{subsec: deployment-and-metrics-collection} describes our deployment setup and the methodology used for performance measurement, and Section~\ref{subsec: evaluation-scenarios-and-results} presents the results obtained under a range of different experimental scenarios.
 
 \subsection{Deployment and Metrics Collection}
 \label{subsec: deployment-and-metrics-collection}
-We conducted all experiments on a dedicated 4-node high-performance cluster located in our university. Each node is equipped with dual AMD EPYC 7H12 processors (resulting in 256 hardware threads) and 503 GiB of RAM. The nodes are interconnected via 10 Gigabit Ethernet.
+We conducted all experiments on a dedicated 4-node high-performance cluster located in our university. Each node is equipped with dual AMD EPYC 7H12 processors, 256 hardware threads, and 503 GiB of RAM. The nodes are interconnected via 10 Gigabit Ethernet.
 
-In our experiments, we simulated a geo-distributed deployment by using all four physical nodes and injecting artificial network latency between them. Both clients and servers are deployed as Docker containers to ensure a clean and reproducible environment. The Figure~\ref{fig: overall-architecture} illustrates the setup. The data is divided into two partitions and fully replicated across two different regions. So, each region consists of two server containers that hold a complete copy of both partitions.  Unless stated otherwise, the clients are uniformly distributed across the two regions, and the number of client containers is varied between experiments to test scalability. By default, intra-region communication takes 0.5 ms round-trip time (RTT), while inter-region communication takes 50 ms.
-
-For performance evaluation, each client container collects local metrics during execution, which are then aggregated by a centralized admin. The metrics we focus on are throughput, latency, abort rates, and bytes transferred, and we also estimate the operational cost. Throughput and abort rates are measured directly by the application logic, while latency and bytes transferred are collected using system-level network monitoring tools. Additionally, we estimate the cost by monitoring the resource utilization within the server containers and tracking the overall network usage.  
+In our experiments, we simulated a two-region deployment by using all four physical nodes and injecting artificial network delay between them. Both clients and servers are deployed as Docker containers to ensure a clean and reproducible environment. Figure~\ref{fig: overall-architecture} illustrates the setup. The data is divided into two partitions, and each logical region consists of two server containers that hold a complete copy of both partitions. The cluster delivers a natural intra-region round-trip time (RTT) of roughly 0.15 ms, and we set the inter-region RTT to 100 ms (Table~\ref{tab: rtt-machines}).
 
 \begin{table}[htbp]
   \centering
@@ -32,11 +23,16 @@ For performance evaluation, each client container collects local metrics during 
     \textbf{A-P1} & —      & 0.15 ms & 100 ms & 100 ms \\
     \textbf{A-P2} & —      & —      & 100 ms & 100 ms \\
     \textbf{B-P1} & —      & —      & —      & 0.15 ms \\
-    \textbf{B-P2} & —      & —      & —      & —      \\ \bottomrule
+    \textbf{B-P2} & —      & —      & —      & —      \\ 
+    \bottomrule
   \end{tabular*}
-  \caption{Round-trip times (RTT) of all unordered pairs of machines. We uniquely identify the machines with the label \textit{Region-Partition} (e.g., \textit{A-P1} is the partition 1 from region A).}
+  \caption{Round-trip times between all unordered pairs of machines. We uniquely identify the machines with the label \textit{Region-Partition} (e.g., \textit{A-P1} is the partition 1 within the region A).}
   \label{tab: rtt-machines}
 \end{table}
+
+Unless stated otherwise, the clients are uniformly distributed across the two regions. To avoid overwhelming or underdriving the systems, we first explore the effects of the number of clients using the scalability test from Section~\ref{subsubsec: scalability scenario}. We identify for each system the point where additional clients would no longer increase the throughput, and use that client count in all remaining scenarios.
+
+For performance evaluation, each client container collects local metrics during execution, which are then aggregated by a centralized admin. The metrics we focus on are throughput, latency, abort rates, and bytes transferred, and we also estimate the operational cost. Throughput, latency, and abort rates are measured directly by the application logic, while the number of transferred bytes is collected using system-level network monitoring tools. Additionally, we provide a simplistic estimation of the operational cost by monitoring the resource utilization within the server containers and tracking the overall network usage. The formula we use for the hourly cost is $C = N_{\text{machine}} * P_{\text{machine}} + V_{\text{traffic}} * P_{\text{traffic}}$, where $N_{\text{machine}}$ is the number of server containers, $P_{\text{machine}}$ is the on-demand hourly price for the each used machine, $V_{\text{traffic}}$ is the cross-region traffic volume, and $P_{\text{traffic}}$ is the data transfer price.
 
 \subsection{Evaluation Scenarios and Results}
 \label{subsec: evaluation-scenarios-and-results}
@@ -55,10 +51,18 @@ In the skewed access pattern, we study how each protocol handles the contention 
 
 As shown in Figure~\ref{fig: skew-access-scenario}, Detock and SLOG experience the most significant drop in throughput when increasing the skew factor from $0.001$ to $0.01$, after which their throughput stays approximately constant. This can be because both systems don't globally order single-home transactions, and thus, high contention can lead to higher aborts of the dependent transactions and local communication overhead between the partitions. In contrast, Calvin manages to have a more stable performance under skew thanks to the centralized sequencer. Janus, although not globally ordering the transactions, does not show a sensitivity to contention, which can indicate that contention is not the main bottleneck given the considered configurations. 
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/Abort Rates.pdf}
+  \caption{Abort Rates in the Skew Access Scenario.}
+  \label{fig:scalability-scenario}
+\end{figure}
+
 \subsubsection{Sunflower Topology Scenario}
 TODO
 
 \subsubsection{Scalability Scenario}
+\label{subsubsec: scalability scenario}
 The scalability scenario focuses on evaluating how each protocol performs as we increase the number of clients, while keeping the workload composition fixed with half of the \textit{OrderProduct} transactions multi-home, and similarly, half of them multi-partition, and no added skew. We observe in Figure~\ref{fig: scalability-access-scenario} how SLOG, Detock, and Calvin all show similar improvements in throughput as the load increases, which demonstrates that these systems have good scalability given a balanced transactional workload. On the other hand, Janus scales even better than the other systems in the beginning, but quickly reaches a saturation point for $100$ clients, where the performance even starts to decrease.
 
 \subsubsection{Network Delays Scenario}
