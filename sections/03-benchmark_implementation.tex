@@ -15,20 +15,6 @@ The databases we evaluate follow a common setup, where data is partitioned acros
 
 As stated in Section~\ref{subsec: evaluated-systems}, we implemented the benchmark within the Detock codebase to offer a unified testing environment for all the evaluated systems. This integration also allows us to define key components such as table schemas, table loaders, and stored procedures in a single place and use them consistently across all databases.
 
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=1\textwidth]{figures/Baseline.pdf}
-    \caption{Results of the Baseline Scenario.}
-    \label{fig: baseline-scenario}
-\end{figure*}
-
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=1\textwidth]{figures/Skew.pdf}
-    \caption{Results of the Skew Access Scenario.}
-    \label{fig: skew-access-scenario}
-\end{figure*}
-
 \subsection{Dependent Transactions}
 \label{subsec: dependent-transactions}
 As mentioned in Section~\ref{subsec: evaluated-systems}, all the evaluated databases need to know the complete set of accessed records for each transaction to either deterministically order them or construct the serialization graph. Among the transactions of the PPS workload, only \textit{OrderProduct} is a dependent transaction since it must first determine which parts are associated with the product before any updates can take place.
