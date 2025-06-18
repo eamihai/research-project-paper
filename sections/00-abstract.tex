@@ -1,4 +1,6 @@
 \begin{abstract}
 \label{sec: abstract}
+Existing evaluations of geo-distributed databases still rely almost exclusively on standard limited workloads such as TPC-C and YCSB+T, which do little to test the effects of wide-area coordination. To address this gap, we present a configurable benchmarking framework built around the Product-Parts-Supplier (PPS) workload. The framework introduces important features such as dependent transactions that may abort and retry, longer and tunable read/write sets, and fine-grained control over which regions will participate in the commit.
 
+Using the new benchmarking framework, we evaluate four representative geo-distributed systems, Calvin, SLOG, Detock, and Janus, across six realistic and insightful scenarios that vary the transactional load, contention, client count, regional bias, network latency, and packet loss. The results expose clear trade-offs between the systems and show that our framework is capable of filling several evaluation holes left by the standard workloads. However, the PPS workload comes with some limitations, and thus, the framework does not cover every case. As a consequence, for now, it should complement TPC-C and YCSB+T, not replace them.
 \end{abstract}
