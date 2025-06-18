@@ -59,14 +59,14 @@ In the skewed access scenario, we study how each protocol handles the contention
 
 As shown in Figure~\ref{fig: skew-access-scenario}, the curves remain nearly flat for all four systems across the entire range of skew factors. For the deterministic designs (Calvin, SLOG, Detock), this is expected since each replica already knows the global order before the execution begins, so a hot key cannot block related transactions. The skew also has little effect on Janus, showing that the system's bottleneck is given by the WAN round-trip.
 
-Figure~\ref{fig: abort-rates} reveals the hidden cost of the skew. The protocols themselves don't abort transactions, since Calvin, SLOG, and Detock commit every transaction in the predetermined order, and Janus commits according to the serialization graph. Therefore, all aborts we observe come from the way we execute the dependent transaction \textit{OrderProduct}. We split it into a read-only phase that retrieves the parts currently associated with the given product, and a write phase that performs the updates. If any of those parts change between those two phases, the server aborts the second phase and signals the client to retry the whole transaction starting from the first phase. The presence of hot records raises the chance that the second phase's validation fails, which explains why abort rates increase with the skew for all systems. However, the increase is small, peaking at only $2.5\%$ among all systems, and leaving throughput and latency practically unchanged.
-
-\begin{figure*}[tt]
+\begin{figure*}[ht]
     \centering
     \includegraphics[width=1\textwidth]{figures/Scalability.pdf}
     \caption{Results of the Scalability Scenario.}
     \label{fig: scalability-access-scenario}
 \end{figure*}
+
+Figure~\ref{fig: abort-rates} reveals the hidden cost of the skew. The protocols themselves don't abort transactions, since Calvin, SLOG, and Detock commit every transaction in the predetermined order, and Janus commits according to the serialization graph. Therefore, all aborts we observe come from the way we execute the dependent transaction \textit{OrderProduct}. We split it into a read-only phase that retrieves the parts currently associated with the given product, and a write phase that performs the updates. If any of those parts change between those two phases, the server aborts the second phase and signals the client to retry the whole transaction starting from the first phase. The presence of hot records raises the chance that the second phase's validation fails, which explains why abort rates increase with the skew for all systems. However, the increase is small, peaking at only $2.5\%$ among all systems, and leaving throughput and latency practically unchanged.
 
 \begin{figure}[ht]
   \centering
@@ -90,23 +90,23 @@ In contrast, Calvin's throughput stays approximately the same. In the Detock cod
   \label{fig: sunflower-throughput}
 \end{figure}
 
-\subsubsection{Scalability Scenario}
-\label{subsubsec: scalability-scenario}
-The scalability scenario focuses on evaluating how each protocol performs as we increase the number of clients, while keeping the workload composition fixed at its standard configuration with $50\%$ multi-home transactions, $50\%$ multi-partition transactions, and no added skew. Figure~\ref{fig: scalability-access-scenario} shows how SLOG, Detock, and Calvin all have similar improvements in throughput as the load increases, which demonstrates that these systems have good scalability given a balanced transactional workload. Janus, on the other hand, scales to roughly 1000 clients, then its throughput collapses to 0. The likely reason is that Janus's unified consensus and replication layer has to handle more and more dependency checks in the serialization graph, which overwhelms its CPUs and network links until it can no longer make progress.
-
-\begin{figure*}[t]
+\begin{figure*}[ht]
     \centering
     \includegraphics[width=1\textwidth]{figures/Network.pdf}
     \caption{Results of the Network Delays Scenario.}
     \label{fig: network-delays-scenario}
 \end{figure*}
 
-\begin{figure*}[t]
+\begin{figure*}[ht]
     \centering
     \includegraphics[width=1\textwidth]{figures/Packet Loss.pdf}
     \caption{Results of the Packet Loss Scenario.}
     \label{fig: packet-loss-scenario}
 \end{figure*}
+
+\subsubsection{Scalability Scenario}
+\label{subsubsec: scalability-scenario}
+The scalability scenario focuses on evaluating how each protocol performs as we increase the number of clients, while keeping the workload composition fixed at its standard configuration with $50\%$ multi-home transactions, $50\%$ multi-partition transactions, and no added skew. Figure~\ref{fig: scalability-access-scenario} shows how SLOG, Detock, and Calvin all have similar improvements in throughput as the load increases, which demonstrates that these systems have good scalability given a balanced transactional workload. Janus, on the other hand, scales to roughly 1000 clients, then its throughput collapses to 0. The likely reason is that Janus's unified consensus and replication layer has to handle more and more dependency checks in the serialization graph, which overwhelms its CPUs and network links until it can no longer make progress.
 
 \subsubsection{Network Delays Scenario}
 \label{subsubsec: network-delays-scenario}
